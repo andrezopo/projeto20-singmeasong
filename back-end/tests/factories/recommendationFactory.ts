@@ -39,4 +39,6 @@ export async function insertMultipleRecommendationsFactory() {
       data: integrationRecommendationFactory("created"),
     });
   }
+
+  await prisma.$disconnect();
 }
