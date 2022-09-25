@@ -1,7 +1,11 @@
 import supertest from "supertest";
 import app from "../../src/app";
-import { integrationRecommendationFactory } from "../factories/recommendationFactory";
+import {
+  insertMultipleRecommendationsFactory,
+  integrationRecommendationFactory,
+} from "../factories/recommendationFactory";
 import pkg from "@prisma/client";
+import { Recommendation } from "@prisma/client";
 
 const { PrismaClient } = pkg;
 
@@ -116,5 +120,81 @@ describe("POST /recommendations/:id/downvote", () => {
     const result = await server.post("/recommendations/999/downvote");
 
     expect(result.status).toBe(404);
+  });
+});
+
+describe("GET /recommendations", () => {
+  it("Must return status 200 and return array with first item being the inserted one", async () => {
+    const createdRecommendation = integrationRecommendationFactory("created");
+
+    const dbRecommendation = await prisma.recommendation.create({
+      data: createdRecommendation,
+    });
+
+    const result = await server.get("/recommendations");
+
+    expect(result.status).toBe(200);
+    expect(result.body).toBeInstanceOf(Array);
+    expect(result.body[0]).toEqual(dbRecommendation);
+  });
+});
+
+describe("GET /recommendations/:id", () => {
+  it("Must return status 200 and return the inserted recommendation", async () => {
+    const createdRecommendation = integrationRecommendationFactory("created");
+
+    const dbRecommendation = await prisma.recommendation.create({
+      data: createdRecommendation,
+    });
+
+    const result = await server.get(`/recommendations/${dbRecommendation.id}`);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(dbRecommendation);
+  });
+
+  it("Must return status 404 for passing non existent id", async () => {
+    const result = await server.get(`/recommendations/999`);
+
+    expect(result.status).toBe(404);
+  });
+});
+
+describe("GET /recommendations/random", () => {
+  it("Must return status 200 and return random recommendation", async () => {
+    await insertMultipleRecommendationsFactory();
+
+    const result = await server.get("/recommendations/random");
+
+    expect(result.status).toBe(200);
+
+    expect(result.body.id).not.toBeFalsy();
+  });
+
+  it("Must return status 404 and do not return any object", async () => {
+    const result = await server.get("/recommendations/random");
+
+    expect(result.status).toBe(404);
+
+    expect(result.body.id).toBeFalsy();
+  });
+});
+
+describe("GET /recommendations/top/:amount", () => {
+  it("Must return status 200 and return the amount of recommmendations in descendent order", async () => {
+    await insertMultipleRecommendationsFactory();
+
+    const amount = 5;
+
+    const result = await server.get(`/recommendations/top/${amount}`);
+
+    expect(result.status).toBe(200);
+
+    expect(result.body).toHaveLength(5);
+
+    expect(result.body[0].score).toBeGreaterThanOrEqual(result.body[1].score);
+    expect(result.body[1].score).toBeGreaterThanOrEqual(result.body[2].score);
+    expect(result.body[2].score).toBeGreaterThanOrEqual(result.body[3].score);
+    expect(result.body[3].score).toBeGreaterThanOrEqual(result.body[4].score);
   });
 });
