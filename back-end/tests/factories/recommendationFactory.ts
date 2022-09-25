@@ -9,3 +9,21 @@ export function recommendationFactory() {
 
   return recommendation;
 }
+
+export function integrationRecommendationFactory(
+  status: "creating" | "created"
+) {
+  if (status === "creating") {
+    return {
+      name: faker.lorem.word(),
+      youtubeLink: `https://www.youtube.com/${faker.lorem.word()}`,
+    };
+  }
+  if (status === "created") {
+    return {
+      name: faker.lorem.word(),
+      youtubeLink: `https://www.youtube.com/${faker.lorem.word()}`,
+      score: 0,
+    };
+  }
+}
