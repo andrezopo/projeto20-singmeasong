@@ -1,5 +1,5 @@
 describe("Test navigation through pages", () => {
-  it("Test going from homepage to top recommendations page", async () => {
+  it("Test going from homepage to top recommendations page then to random page and finally back to homepage", async () => {
     cy.intercept("GET", `/recommendations`).as("getContent");
     cy.visit("/");
     cy.wait("@getContent");
