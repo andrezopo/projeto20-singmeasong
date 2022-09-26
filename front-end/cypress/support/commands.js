@@ -10,7 +10,10 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
+import { faker } from "@faker-js/faker";
+Cypress.Commands.add("createRecommendation", () => {
+  const recommendation = {};
+});
 //
 //
 // -- This is a child command --
